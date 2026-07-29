@@ -1,0 +1,686 @@
+"""
+============================================================
+NumPy Interview Q&A  |  Basic → Intermediate → Advanced
+============================================================
+Each answer follows:
+  1. Definition
+  2. Understanding
+  3. Example
+  4. Explanation
+============================================================
+"""
+
+# ============================================================
+# PART 1: BASIC LEVEL
+# ============================================================
+
+"""
+------------------------------------------------------------
+Q1. What is NumPy?
+------------------------------------------------------------
+Definition:
+    NumPy (Numerical Python) is a Python library for fast
+    numerical computing using multi-dimensional arrays.
+
+Understanding:
+    Python lists are flexible but slow for math on large data.
+    NumPy stores data in contiguous memory (C-style) and uses
+    vectorized operations, so math runs much faster.
+
+Example:
+    import numpy as np
+    arr = np.array([1, 2, 3, 4])
+    print(arr * 2)   # [2 4 6 8]
+
+Explanation:
+    One operation applies to the whole array at once
+    (vectorization), instead of writing a Python for-loop.
+"""
+
+"""
+------------------------------------------------------------
+Q2. What is a NumPy ndarray?
+------------------------------------------------------------
+Definition:
+    ndarray is NumPy's N-dimensional array object — the core
+    data structure that holds elements of the same type.
+
+Understanding:
+    - Homogeneous: all elements share one dtype (int, float…)
+    - Fixed shape: (rows, cols, …)
+    - Supports indexing, slicing, broadcasting, ufuncs
+
+Example:
+    a = np.array([[1, 2, 3], [4, 5, 6]])
+    print(a.shape)   # (2, 3)
+    print(a.ndim)    # 2
+    print(a.dtype)   # int32 / int64
+    print(a.size)    # 6
+
+Explanation:
+    shape = size of each axis, ndim = number of axes,
+    size = total elements, dtype = data type of each element.
+"""
+
+"""
+------------------------------------------------------------
+Q3. How do you create arrays in NumPy?
+------------------------------------------------------------
+Definition:
+    Array creation = building ndarrays from lists, ranges,
+    or filled with constants / random values.
+
+Understanding:
+    Pick the creator that matches your need:
+    known values → array | sequence → arange/linspace
+    placeholders → zeros/ones/empty | identity → eye
+
+Example:
+    np.array([1, 2, 3])
+    np.arange(0, 10, 2)          # [0 2 4 6 8]  step-based
+    np.linspace(0, 1, 5)         # [0. 0.25 0.5 0.75 1.]  count-based
+    np.zeros((2, 3))
+    np.ones((2, 2))
+    np.empty((2, 2))             # uninitialized junk values
+    np.eye(3)                    # 3x3 identity
+    np.random.randint(0, 10, (2, 3))
+
+Explanation:
+    arange uses STEP (stop usually excluded).
+    linspace uses NUMBER OF POINTS (stop included).
+    empty is fastest but unsafe until you overwrite values.
+"""
+
+"""
+------------------------------------------------------------
+Q4. What is the difference between a Python list and a NumPy array?
+------------------------------------------------------------
+Definition:
+    List = general Python container. ndarray = typed,
+    fixed-shape numerical array optimized for math.
+
+Understanding:
+    | Feature     | list          | ndarray        |
+    |-------------|---------------|----------------|
+    | Types       | Mixed OK      | Same dtype     |
+    | Math        | Manual loops  | Vectorized     |
+    | Speed       | Slower        | Much faster    |
+    | Memory      | More overhead | Contiguous     |
+
+Example:
+    lst = [1, 2, 3]
+    arr = np.array([1, 2, 3])
+    print(lst * 2)   # [1, 2, 3, 1, 2, 3]  (repeat)
+    print(arr * 2)   # [2 4 6]             (math)
+
+Explanation:
+    Same * operator means different things — list repeats,
+    NumPy multiplies element-wise. Interviewers love this.
+"""
+
+"""
+------------------------------------------------------------
+Q5. Explain indexing and slicing.
+------------------------------------------------------------
+Definition:
+    Indexing selects elements; slicing selects a contiguous
+    range using start:stop:step.
+
+Understanding:
+    - 1D: arr[i], arr[start:stop]
+    - 2D: arr[row, col], arr[r1:r2, c1:c2]
+    - Negative indices count from the end
+
+Example:
+    a = np.array([[10, 20, 30],
+                  [40, 50, 60],
+                  [70, 80, 90]])
+    print(a[1, 2])      # 60
+    print(a[0:2, 1:])   # [[20 30]
+                        #  [40 50]]
+    print(a[-1])        # [70 80 90]
+
+Explanation:
+    First index = row (axis 0), second = column (axis 1).
+    Slices usually return a VIEW (share memory with original).
+"""
+
+"""
+------------------------------------------------------------
+Q6. What are axis=0 and axis=1?
+------------------------------------------------------------
+Definition:
+    axis tells NumPy WHICH DIMENSION to collapse when doing
+    aggregations (sum, mean, max, etc.).
+
+Understanding:
+    For 2D data:
+      axis=0 → operate DOWN columns (collapse rows)
+      axis=1 → operate ACROSS rows (collapse columns)
+
+Example:
+    arr = np.array([[1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9]])
+    np.sum(arr)           # 45  (all)
+    np.sum(arr, axis=0)   # [12 15 18]  column sums
+    np.sum(arr, axis=1)   # [6 15 24]   row sums
+
+Explanation:
+    Think: axis = direction you travel while combining values.
+    Same rule applies to mean, max, min, argmax, std, etc.
+"""
+
+"""
+------------------------------------------------------------
+Q7. What is np.argmax / np.argmin?
+------------------------------------------------------------
+Definition:
+    argmax returns the INDEX of the maximum value;
+    argmin returns the INDEX of the minimum value.
+
+Understanding:
+    max/min → the value itself
+    argmax/argmin → WHERE that value sits
+
+Example:
+    arr = np.array([[1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9]])
+    np.max(arr)      # 9
+    np.argmax(arr)   # 8  (flattened index)
+    np.argmax(arr, axis=0)  # [2 2 2]  row index of max in each col
+
+Explanation:
+    Without axis, array is treated as flat (row-major order).
+    With axis, you get one index per slice along that axis.
+"""
+
+
+# ============================================================
+# PART 2: INTERMEDIATE LEVEL
+# ============================================================
+
+"""
+------------------------------------------------------------
+Q8. What is vectorization?
+------------------------------------------------------------
+Definition:
+    Performing operations on whole arrays at once without
+    explicit Python loops, using NumPy's C-level routines.
+
+Understanding:
+    Loops in Python are slow. Vectorized code is concise
+    and often 10x–100x faster on large data.
+
+Example:
+    a = np.arange(1_000_000)
+    # Slow:  [x*2 for x in a]
+    # Fast:
+    b = a * 2
+
+Explanation:
+    NumPy pushes the loop into optimized C/Fortran code.
+    Prefer array expressions over for-loops in interviews.
+"""
+
+"""
+------------------------------------------------------------
+Q9. What is broadcasting?
+------------------------------------------------------------
+Definition:
+    Broadcasting lets NumPy operate on arrays of different
+    shapes by virtually stretching the smaller one.
+
+Understanding:
+    Rules (right to left):
+      1. Dimensions equal, OR
+      2. One of them is 1
+    Otherwise → ValueError
+
+Example:
+    a = np.array([[1],
+                  [2],
+                  [3]])          # shape (3, 1)
+    b = np.array([10, 20, 30])   # shape (3,)
+    print(a + b)
+    # [[11 21 31]
+    #  [12 22 32]
+    #  [13 23 33]]
+
+Explanation:
+    a acts like 3 columns copied; b acts like 3 rows copied.
+    No actual copy of data is required — it's a view-style stretch.
+"""
+
+"""
+------------------------------------------------------------
+Q10. Fancy indexing vs Boolean masking?
+------------------------------------------------------------
+Definition:
+    Fancy indexing = select with a list/array of indices.
+    Boolean masking = select where a condition is True.
+
+Understanding:
+    Both return a COPY (not a view), unlike basic slicing.
+
+Example:
+    arr = np.array([10, 21, 32, 43, 54])
+
+    # Fancy indexing
+    print(arr[[0, 2, 4]])     # [10 32 54]
+
+    # Boolean mask
+    mask = arr % 2 == 0
+    print(arr[mask])          # [10 32 54]
+
+Explanation:
+    Masking is ideal for filtering (even numbers, scores > 80).
+    Fancy indexing is ideal when you already know positions.
+"""
+
+"""
+------------------------------------------------------------
+Q11. reshape vs flatten vs ravel?
+------------------------------------------------------------
+Definition:
+    reshape → change shape without changing data order
+    flatten → 1D copy
+    ravel   → 1D view (usually)
+
+Understanding:
+    | Method   | Output | Copy/View      |
+    |----------|--------|----------------|
+    | reshape  | any    | usually view   |
+    | flatten  | 1D     | always copy    |
+    | ravel    | 1D     | view if possible|
+
+Example:
+    mat = np.array([[1, 2, 3], [4, 5, 6]])
+    print(mat.reshape(3, 2))
+    print(mat.flatten())   # [1 2 3 4 5 6]  safe copy
+    print(mat.ravel())     # [1 2 3 4 5 6]  may share memory
+
+Explanation:
+    Changing ravel() result can change original mat.
+    Use flatten() when you need an independent array.
+"""
+
+"""
+------------------------------------------------------------
+Q12. What is np.random.seed()?
+------------------------------------------------------------
+Definition:
+    seed() initializes the pseudo-random generator so
+    random sequences become reproducible.
+
+Understanding:
+    Same seed → same "random" numbers every run.
+    Useful for demos, tests, and interview reproducibility.
+
+Example:
+    np.random.seed(25)
+    print(np.random.randint(0, 10, 3))  # same every time
+
+Explanation:
+    Computers generate deterministic sequences from a seed.
+    Without seed, each run produces different values.
+"""
+
+"""
+------------------------------------------------------------
+Q13. Explain common statistical functions.
+------------------------------------------------------------
+Definition:
+    Functions that summarize a dataset: center, spread,
+    extremes, and distribution points.
+
+Understanding:
+    mean   → average
+    median → middle value
+    mode   → most frequent (via bincount + argmax trick)
+    std    → typical distance from mean
+    var    → std squared
+    ptp    → max - min (range)
+    percentile → value below which p% of data lies
+
+Example:
+    data = np.array([10, 20, 30, 40, 50])
+    np.mean(data)              # 30
+    np.median(data)            # 30
+    np.std(data)
+    np.percentile(data, 25)    # 25th percentile (Q1)
+
+Explanation:
+    For normal data, mean ≈ median. High std = more spread.
+    Percentiles help describe distribution without plotting.
+"""
+
+"""
+------------------------------------------------------------
+Q14. How do vstack and hstack work?
+------------------------------------------------------------
+Definition:
+    vstack stacks arrays vertically (row-wise).
+    hstack stacks arrays horizontally (column-wise).
+
+Example:
+    a = np.array([1, 2, 3])
+    b = np.array([4, 5, 6])
+    np.vstack((a, b))
+    # [[1 2 3]
+    #  [4 5 6]]
+    np.hstack((a, b))
+    # [1 2 3 4 5 6]
+
+Explanation:
+    vstack increases rows; hstack increases columns / length.
+    Shapes along the non-stacked axis must match.
+"""
+
+"""
+------------------------------------------------------------
+Q15. How do you find top-N values (e.g. top 3 marks)?
+------------------------------------------------------------
+Definition:
+    Use argsort to get sorted indices, then slice the last N.
+
+Understanding:
+    argsort returns indices that would sort the array ascending.
+    Last N indices = top N values.
+
+Example:
+    marks = np.array([88, 76, 92, 85, 95, 80])
+    top_idx = np.argsort(marks)[-3:][::-1]
+    print(marks[top_idx])   # [95 92 88]
+
+Explanation:
+    [-3:] → three largest (still ascending among them)
+    [::-1] → reverse to high → low order
+"""
+
+
+# ============================================================
+# PART 3: ADVANCED LEVEL
+# ============================================================
+
+"""
+------------------------------------------------------------
+Q16. View vs Copy — why does it matter?
+------------------------------------------------------------
+Definition:
+    View = new array object sharing the same memory.
+    Copy = independent data in new memory.
+
+Understanding:
+    Slices → usually VIEW
+    fancy/boolean index → COPY
+    Changing a view changes the original (side effects!)
+
+Example:
+    a = np.array([1, 2, 3, 4])
+    b = a[:2]       # view
+    b[0] = 99
+    print(a)        # [99 2 3 4]  original changed!
+
+    c = a.copy()
+    c[0] = 1
+    print(a)        # still [99 2 3 4]
+
+Explanation:
+    Interviewers test whether you know silent bugs from views.
+    Use .copy() when you must protect the original.
+"""
+
+"""
+------------------------------------------------------------
+Q17. What is np.convolve? (moving average use case)
+------------------------------------------------------------
+Definition:
+    convolve slides one array (kernel) over another, multiplying
+    overlaps and summing — used for filtering / smoothing.
+
+Understanding:
+    For a moving average of window w:
+      kernel = ones(w) / w
+    Each output = average of w consecutive inputs.
+
+Example:
+    sales = np.array([10, 20, 30, 40, 50, 60, 70])
+    ma = np.convolve(sales, np.ones(3)/3, mode='valid')
+    # averages of [10,20,30], [20,30,40], ...
+
+Explanation:
+    mode='valid' → only full window overlaps (shorter output)
+    mode='same'  → output length = input length
+    mode='full'  → all overlaps (longest output)
+"""
+
+"""
+------------------------------------------------------------
+Q18. Element-wise * vs matrix multiplication @ / dot?
+------------------------------------------------------------
+Definition:
+    *  → element-wise (Hadamard) product
+    @ or np.dot → linear-algebra matrix product
+
+Example:
+    A = np.array([[1, 2], [3, 4]])
+    B = np.array([[5, 6], [7, 8]])
+    print(A * B)     # [[5 12] [21 32]]
+    print(A @ B)     # [[19 22] [43 50]]
+    print(np.dot(A, B))  # same as @
+
+Explanation:
+    For (m×n) @ (n×p) → (m×p). Inner dims must match.
+    Confusing * with @ is a classic interview trap.
+"""
+
+"""
+------------------------------------------------------------
+Q19. Explain np.linalg basics (det, inv, solve, eig).
+------------------------------------------------------------
+Definition:
+    np.linalg provides linear algebra routines on matrices.
+
+Understanding:
+    det   → determinant (0 ⇒ singular / not invertible)
+    inv   → matrix inverse
+    solve → solve Ax = b (prefer over inv for stability)
+    eig   → eigenvalues & eigenvectors
+    rank  → number of independent rows/cols
+
+Example:
+    A = np.array([[3., 1.], [1., 2.]])
+    b = np.array([9., 8.])
+    x = np.linalg.solve(A, b)   # solution of Ax = b
+    print(np.linalg.det(A))
+    vals, vecs = np.linalg.eig(A)
+
+Explanation:
+    Prefer solve() over inv(A) @ b — more accurate & faster.
+    A @ v = λ * v defines eigenpairs.
+"""
+
+"""
+------------------------------------------------------------
+Q20. How does NumPy file I/O work?
+------------------------------------------------------------
+Definition:
+    Save/load arrays via text (savetxt/loadtxt), binary
+    (.npy), or flexible CSV parsing (genfromtxt).
+
+Understanding:
+    | Method        | Format     | Notes                    |
+    |---------------|------------|--------------------------|
+    | savetxt/loadtxt | text/csv | human-readable, fmt=     |
+    | save/load     | .npy binary| fast, preserves dtype    |
+    | genfromtxt    | text/csv   | handles missing → NaN    |
+
+Example:
+    arr = np.arange(1, 11).reshape(2, 5)
+    np.savetxt("array_data.txt", arr, fmt='%d')
+    loaded = np.loadtxt("array_data.txt")
+
+    np.save("data.npy", arr)
+    loaded2 = np.load("data.npy")
+
+    missing = np.genfromtxt("test_missing.csv", delimiter=',')
+
+Explanation:
+    Default savetxt uses scientific notation — use fmt='%d'
+    or fmt='%.2f' for readable files.
+    .npy is best for intermediate program data.
+"""
+
+"""
+------------------------------------------------------------
+Q21. What are ufuncs?
+------------------------------------------------------------
+Definition:
+    Universal functions — fast element-wise functions that
+    operate on ndarrays (np.add, np.sin, np.exp, …).
+
+Understanding:
+    Support broadcasting, type casting, and optional output
+    arrays. Foundation of vectorized NumPy code.
+
+Example:
+    x = np.array([0, np.pi/2, np.pi])
+    print(np.sin(x))
+    print(np.add([1, 2], [3, 4]))  # [4 6]
+
+Explanation:
+    Custom Python functions are slow; prefer built-in ufuncs
+    or np.vectorize only when necessary (vectorize is convenience,
+    not a speed guarantee).
+"""
+
+"""
+------------------------------------------------------------
+Q22. How do you handle NaN / missing values?
+------------------------------------------------------------
+Definition:
+    NaN (Not a Number) marks missing/invalid floating data.
+    Use nan-aware functions to ignore them.
+
+Example:
+    a = np.array([1., 2., np.nan, 4.])
+    np.nanmean(a)     # ignores NaN → 2.333...
+    np.isnan(a)       # [False False True False]
+    a[~np.isnan(a)]   # drop NaNs → [1. 2. 4.]
+
+Explanation:
+    Regular mean() returns NaN if any value is NaN.
+    genfromtxt turns blank CSV cells into NaN automatically.
+"""
+
+"""
+------------------------------------------------------------
+Q23. What is memory layout: C-order vs F-order?
+------------------------------------------------------------
+Definition:
+    C-order (row-major): last index changes fastest.
+    F-order (column-major): first index changes fastest.
+
+Example:
+    a = np.array([[1, 2, 3],
+                  [4, 5, 6]], order='C')
+    print(a.flags['C_CONTIGUOUS'])  # True
+    b = np.asfortranarray(a)
+    print(b.flags['F_CONTIGUOUS'])  # True
+
+Explanation:
+    Default is C-order. Contiguity affects speed of
+    reshape/ravel and cache-friendly access patterns.
+"""
+
+"""
+------------------------------------------------------------
+Q24. How can you speed up NumPy code?
+------------------------------------------------------------
+Definition:
+    Performance optimization = using NumPy the way it was
+    designed: vectorize, preallocate, choose dtypes wisely.
+
+Understanding / Tips:
+    1. Avoid Python loops — use vectorization
+    2. Preallocate with empty/zeros instead of growing lists
+    3. Use appropriate dtype (float32 vs float64) if precision allows
+    4. Prefer views over copies when safe
+    5. Use in-place ops: arr += 1
+    6. For heavy work: Numba, or move to pandas/polars when tabular
+
+Example:
+    # Bad
+    out = []
+    for x in range(100000):
+        out.append(x * 2)
+
+    # Good
+    out = np.arange(100000) * 2
+
+Explanation:
+    Biggest win is usually algorithmic (vectorize), not micro-tweaks.
+"""
+
+"""
+------------------------------------------------------------
+Q25. Boolean masking for filtering (even numbers example)
+------------------------------------------------------------
+Definition:
+    Create a True/False array from a condition, then use it
+    as an index to keep matching elements.
+
+Example:
+    arr = np.arange(1, 11).reshape(2, 5)
+    even_mask = arr % 2 == 0
+    even_arr = arr[even_mask]
+    np.savetxt("even_data.txt", even_arr, fmt='%d')
+
+Explanation:
+    Mask shape matches arr; indexing with it flattens selected
+    values into 1D. Common pattern in data cleaning interviews.
+"""
+
+
+# ============================================================
+# QUICK FIRE — One-line answers (revision)
+# ============================================================
+"""
+Q: Why is NumPy faster than lists?
+A: Contiguous typed memory + vectorized C operations.
+
+Q: linspace vs arange?
+A: linspace = how many points (stop included);
+   arange = step size (stop excluded).
+
+Q: What does empty() return?
+A: Uninitialized values (garbage), not zeros.
+
+Q: Does slicing copy?
+A: Usually no — it returns a view.
+
+Q: Does boolean indexing copy?
+A: Yes — it returns a copy.
+
+Q: axis=0 means?
+A: Collapse rows → result per column.
+
+Q: @ vs * ?
+A: @ matrix multiply, * element-wise.
+
+Q: Prefer solve or inv for Ax=b?
+A: np.linalg.solve
+
+Q: fmt in savetxt why?
+A: Control readable output (avoid scientific notation).
+
+Q: seed why?
+A: Reproducible randomness.
+"""
+
+if __name__ == "__main__":
+    print("NumPy Interview Q&A loaded.")
+    print("Open this file and read Q1–Q25 section by section.")
+    print("Levels: Basic (Q1–Q7) | Intermediate (Q8–Q15) | Advanced (Q16–Q25)")
